@@ -17,6 +17,7 @@ class SendReminderCommand extends Command
 
     public function handle()
     {
+        // Seleccionamos el evento del cual vamos a enviar recordatorios
         $eventId = search(
             label: '¿Cuál es el evento que quiere enviar un recordatorio?',
             options: function (string $value) {
@@ -27,12 +28,18 @@ class SendReminderCommand extends Command
                     : [];
             });
 
+        // Buscamos el modelo del evento por su ID
         $event = Event::find($eventId);
 
+        // Recorremos los asistentes del evento y enviamos un mail de recordatorio
+        // por cada uno
+        // La función withProgressBar hace que se vea una barra de progreso por cada
+        // usuario para una mejor experiencia
         $this->withProgressBar($event->users, function (User $user) use ($event) {
             Mail::to($user->email)->send(new ReminderMail($event));
         });
 
+        // Mostramos los resultados
         $this->newLine();
         $this->info('Se enviaron los recordatorios a los siguientes asistentes');
         $this->table(

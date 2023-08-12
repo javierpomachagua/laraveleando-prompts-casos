@@ -15,10 +15,17 @@ class CreateUserCommand extends Command
 
     public function handle()
     {
-        $role = select('¿Cuál será el usuario del rol?', [
-            'Administrador', 'Suscriptor', 'Invitado', 'Regular'
-        ]);
+        // Solicitamos el rol del usuario que queremos crear
+        $role = select(
+            label: '¿Cuál será el usuario del rol?',
+            options: [
+                'Administrador',
+                'Suscriptor',
+                'Invitado',
+                'Regular'
+            ]);
 
+        // Solicitamos la cantidad de usuarios que queremos crear
         $count = text(
             label: '¿Cuántos usuarios se desea?',
             placeholder: 1,
@@ -29,12 +36,16 @@ class CreateUserCommand extends Command
             }
         );
 
+        // Creamos los usuarios
         $users = User::factory()->count($count)->state([
             'role' => $role
-        ])->create()
-            ->map(fn(User $user) => $user->only(['email', 'role']))
+        ])->create();
+
+        // Formateamos los usuarios para mostrarlos
+        $users = $users->map(fn(User $user) => $user->only(['email', 'role']))
             ->toArray();
 
+        // Mostramos los resultados
         $this->info('Usuario(s) creado(s)');
         $this->table(
             ['Email', 'Role'],
